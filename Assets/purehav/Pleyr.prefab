@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5029978964510055197}
   - component: {fileID: 8570877844868772506}
   - component: {fileID: 8739735987648314452}
-  - component: {fileID: -621665883946183766}
+  - component: {fileID: 175578025992099578}
   m_Layer: 0
   m_Name: Pleyr
   m_TagString: Untagged
@@ -139,7 +139,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &-621665883946183766
+--- !u!114 &175578025992099578
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
