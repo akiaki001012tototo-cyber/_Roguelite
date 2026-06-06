@@ -44,6 +44,8 @@ namespace TPSRoguelite.InGame.Camera
             //マウスカーソルを画面中央にロックして非表示にする
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            
         }
 
         private void OnEnable()
