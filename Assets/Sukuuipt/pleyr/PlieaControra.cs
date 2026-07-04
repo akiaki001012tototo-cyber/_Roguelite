@@ -1,6 +1,11 @@
 using Core.Interface;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.CompilerServices;
+using InGame.Data; // 武器データを使うために追加
+using InGame.Enums;
 using System;
+using System.Threading;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
@@ -32,17 +37,11 @@ namespace TPSRoguelite.InGame.Player
         // レーザーポインターの描画距離
         private const float LASER_MAX_DISTANCE = 50.0f;
 
-        //相手に与えるダメージ量
-        private const int ATTACK_DAMAGE = 20;
 
         // 攻撃距離（射撃範囲）
         private const float ATTACK_RANGE = 50f;
 
-        //最大弾数
-        private const int MAX_AMMO = 30;
-       
-        //リロード時間
-        private const float RELOAD_TIME = 1.5f;
+
 
         // (既存のメンバ変数は省略)
         private bool isReloading;
@@ -59,14 +58,35 @@ namespace TPSRoguelite.InGame.Player
 
 
 
+
+        // 武器のデータ 
+        [SerializeField] private WeaponData currentWeapon;
+
+
+        // 射撃可能か
+        private bool canShoot = true;
+
+
+        //射撃のキャンセルトークン
+        private CancellationTokenSource firCts;
+
+
         private void Awake()
         {
-            CurrenAmmo=MAX_AMMO;
 
-            inputActions=new PleyrInputActions();
-            inputActions.Player.Fire.performed+=Fire;
-
-            inputActions.Player.Reload.performed+=OnReload;
+            // ゲーム開始時に、マガジンに弾をフル装填する
+            if (currentWeapon != null)
+            {
+                CurrenAmmo = currentWeapon.MaxAmmo;
+            }
+            else
+            {
+                Debug.LogError("currentWeaponが見つかりませんでした");
+            }
+            inputActions = new PleyrInputActions();
+            inputActions.Player.Fire.started += OnFire;
+            inputActions.Player.Fire.canceled += OnFire;
+            inputActions.Player.Reload.performed += OnReload;
 
 
             if (UnityEngine.Camera.main!=null)
@@ -77,6 +97,149 @@ namespace TPSRoguelite.InGame.Player
             }
         }
 
+
+        public void OnFire(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                // クールダウン中やリロード中（撃てない状態）なら、連打されても完全に無視する！
+                if (!canShoot || isReloading || currentWeapon == null)
+                {
+                    return;
+                }
+
+                firCts = new CancellationTokenSource();
+                var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(firCts.Token, this.GetCancellationTokenOnDestroy());
+
+                switch (currentWeapon.WeaponFireType)
+                {
+                   
+
+                    case FireType.SemiAuto:
+                        ShootSemiAutoAsync(this.GetCancellationTokenOnDestroy()).Forget();
+                        SootBurstAsync(this.GetCancellationTokenOnDestroy()).Forget();
+                        break;
+
+                    case FireType.Burst:
+                        SootBurstAsync(this.GetCancellationTokenOnDestroy()).Forget();
+                        break;
+
+                    case FireType.FullAuto:
+                        SootFullAsync(linkedCts.Token).Forget();
+                        break;
+
+                    default:
+                        Debug.LogWarning($"割り当てていない射撃タイプがあります。{currentWeapon.WeaponFireType}");
+                        break;
+
+                }
+
+                if (context.canceled)
+                {
+                    firCts?.Cancel();
+                    firCts?.Dispose();
+                    firCts=null;
+                }
+            }
+        }
+
+        // セミオートの射撃処理
+
+        private async UniTaskVoid ShootSemiAutoAsync(CancellationToken token)
+        {
+            canShoot = false;
+
+            if (CurrenAmmo <= 0)
+            {
+                ReloadAsync().Forget();
+                return;
+            }
+
+            CurrenAmmo--;
+            Debug.Log($"バン！ 残弾: {CurrenAmmo}");
+            Shoot();
+
+            await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireRate), cancellationToken: token);
+
+            canShoot = true;
+        }
+
+
+    //バーストの射撃処理
+        private async UniTaskVoid SootBurstAsync(CancellationToken token)
+        { 
+        canShoot= false;
+
+            for (int i = 0; i<3; i++)
+            {
+                if (CurrenAmmo<=0)
+                {
+                    ReloadAsync().Forget();
+                    break;
+                }
+
+                CurrenAmmo--;
+                Shoot();
+                Debug.Log($"バースト！ 残弾: {CurrenAmmo}");
+
+                await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval), cancellationToken: token);
+                canShoot=true;
+            }
+        }
+
+
+        private async UniTaskVoid SootFullAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                if (CurrenAmmo<=0)
+                {
+                    ReloadAsync().Forget();
+                    break;
+                }
+                CurrenAmmo--;
+                Debug.Log($"フルオート！ 残弾: {CurrenAmmo}");
+                Shoot();
+
+                bool isCanceled= await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval), cancellationToken: token).SuppressCancellationThrow();
+                if (isCanceled)
+                {
+                    break;
+                }
+                await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval),cancellationToken:this.GetCancellationTokenOnDestroy());
+                canShoot=true;
+
+            }
+
+        }
+
+        // 共通の射撃処理
+        private void Shoot()
+        {
+            Ray ray = new Ray(mainCameraTransform.position, mainCameraTransform.forward);
+
+            // 光線に何かが当たったか判定
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, ATTACK_RANGE))
+            {
+                Debug.Log($"{hitInfo.collider.name}に命中！");
+
+                // 当たった相手が IDamageable を持っているか確認
+                IDamageable target = hitInfo.collider.GetComponent<IDamageable>();
+
+                // ダメージを受ける性質を持ったオブジェクトであればダメージを与える
+                if (target != null)
+                {
+                    target.TakeDamage(currentWeapon.AttackPower);
+                }
+            }
+        }
+
+
+
+
+
+
+
         private void OnEnable()
         {
             inputActions.Enable();
@@ -86,6 +249,8 @@ namespace TPSRoguelite.InGame.Player
         {
             inputActions.Disable();
         }
+
+
         // Update is called once per frame
         void Update()
         {
@@ -164,7 +329,7 @@ namespace TPSRoguelite.InGame.Player
                 if (target != null)
                 {
                     //ダメージを受ける性質を持ったオブジェクトであればダメージを与える
-                    target.TakeDamage(ATTACK_DAMAGE);
+                    target.TakeDamage(currentWeapon.AttackPower);
                 }
 
 
@@ -173,22 +338,22 @@ namespace TPSRoguelite.InGame.Player
 
         private void OnReload(InputAction.CallbackContext context)
         {
-            if (isReloading&&CurrenAmmo==MAX_AMMO)
+            if (isReloading||CurrenAmmo==currentWeapon.MaxAmmo)
             {
                 return;
             }
 
-            ReloadAsync().Forget();             
+            ReloadAsync().Forget();
         }
 
 
         async UniTask ReloadAsync()
-        { 
-          isReloading = true;
+        {
+            isReloading = true;
             Debug.Log("リロード中");
-             await UniTask.Delay (System.TimeSpan.FromSeconds(RELOAD_TIME), cancellationToken: this.GetCancellationTokenOnDestroy());
+            await UniTask.Delay(System.TimeSpan.FromSeconds(currentWeapon.ReloadTime), cancellationToken: this.GetCancellationTokenOnDestroy());
 
-            CurrenAmmo=MAX_AMMO;
+            CurrenAmmo=currentWeapon.MaxAmmo;
             isReloading=false;
             Debug.Log("リロード完了");
         }
