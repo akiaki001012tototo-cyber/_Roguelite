@@ -16,7 +16,7 @@ MonoBehaviour:
   - <Id>k__BackingField: 1
     <WeaponName>k__BackingField: "\u30CF\u30F3\u30C9\u30AC\u30F3"
     <WeaponFireType>k__BackingField: 0
-    <AttackPower>k__BackingField: 5
+    <AttackPower>k__BackingField: 2
     <FireInterval>k__BackingField: 3
     <FireRate>k__BackingField: 5
     <MaxAmmo>k__BackingField: 8
