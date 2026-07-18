@@ -368,6 +368,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 2004910998}
+  taget: {fileID: 0}
+  lookSensitivity: 0.2
+  minPitch: 10
+  maxPitch: 60
+  zoomSpeed: 0.5
+  targetDistance: -5
+  targetHeightOffset: 1.2
+  targetShouiderOffset: 0.8
 --- !u!114 &769306773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -570,6 +578,11 @@ MeshFilter:
 --- !u!54 &1001811696 stripped
 Rigidbody:
   m_CorrespondingSourceObject: {fileID: 8739735987648314452, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+  m_PrefabInstance: {fileID: 7370849270819624492}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &1171559450 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 1713923497624362135, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
   m_PrefabInstance: {fileID: 7370849270819624492}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1197098450
@@ -1053,6 +1066,18 @@ PrefabInstance:
     - target: {fileID: 175578025992099578, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
       propertyPath: weponId
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 175578025992099578, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+      propertyPath: muzzleFlash
+      value: 
+      objectReference: {fileID: 1171559450}
+    - target: {fileID: 714203017137510634, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 714203017137510634, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.63
       objectReference: {fileID: 0}
     - target: {fileID: 2576207141857271985, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
       propertyPath: m_Name

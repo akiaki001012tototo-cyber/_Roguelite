@@ -43,7 +43,8 @@ namespace TPSRoguelite.InGame.Player
         //武器のID
         [SerializeField] private ulong weponId = 1;
 
-
+        //スマッシュのエフェクト
+        [SerializeField] private ParticleSystem muzzleFlash;
 
         // 攻撃距離（射撃範囲）
         private const float ATTACK_RANGE = 50f;
@@ -232,6 +233,13 @@ namespace TPSRoguelite.InGame.Player
         // 共通の射撃処理
         private void Shoot()
         {
+
+            if (muzzleFlash!=null)
+            {
+                Debug.Log($"play");
+                muzzleFlash.Play();
+            }
+
             Ray ray = new Ray(mainCameraTransform.position, mainCameraTransform.forward);
 
             // 光線に何かが当たったか判定
