@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using static UnityEngine.EventSystems.EventTrigger;
-
+using Core.MasterData;
 namespace TPSRoguelite.Spawner
 {
     public class EnemySpawner : MonoBehaviour
@@ -30,24 +30,7 @@ namespace TPSRoguelite.Spawner
         private Queue<EnemyState> enemyPool;
 
 
-        private void Awake()
-        {
-            if (enemyPrefb==null)
-            {
-                return;
-            }
-
-            enemyPool = new Queue<EnemyState>();
-
-            //開始時にあらかじめ用意した数だけ生成しておく
-            for (int i = 0; i<POOL_SIZE; i++)
-            {
-                GameObject enemyObj = Instantiate(enemyPrefb);
-                EnemyState enemy = enemyObj.GetComponent<EnemyState>();
-                enemy.gameObject.SetActive(false);
-                enemyPool.Enqueue(enemy);
-            }
-        }
+        
 
 
         private async UniTaskVoid SpawnLoopAsync()
@@ -68,9 +51,35 @@ namespace TPSRoguelite.Spawner
         }
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+       
+
+        public void Setup()
         {
+            if (enemyPrefb==null)
+            {
+                return;
+            }
+
+            enemyPool = new Queue<EnemyState>();
+
+            //開始時にあらかじめ用意した数だけ生成しておく
+            for (int i = 0; i<POOL_SIZE; i++)
+            {
+
+                GameObject enemyObj = Instantiate(enemyPrefb);
+                EnemyState enemy = enemyObj.GetComponent<EnemyState>();
+                if (enemy!=null)
+                {
+                    ulong randomId = (ulong)UnityEngine.Random.Range(1, MasterDataAccessor.Instance.Count<EnemyDataRecord>());
+                    enemy.Initalize(randomId);
+                    enemy.gameObject.SetActive(false);
+                    enemyPool.Enqueue(enemy);
+                }
+
+
+            }
             SpawnLoopAsync().Forget();
+
         }
 
         // 敵の生成
@@ -127,7 +136,9 @@ namespace TPSRoguelite.Spawner
             enemy.transform.position = safePosition;
             enemy.transform.rotation = spawnPoint.rotation;
 
-            enemy.gameObject.SetActive(true);
+            enemy.Setup();
+
+            
         }
 
         //プールに戻す

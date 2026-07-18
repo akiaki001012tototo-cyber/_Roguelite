@@ -724,6 +724,65 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1389524755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1389524758}
+  - component: {fileID: 1389524757}
+  - component: {fileID: 1389524756}
+  m_Layer: 0
+  m_Name: Maneger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1389524756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389524755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a12b5da057075ef458ae9728d42aa9bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1389524757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389524755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb9a6c2f48caad54ebd6741bf507a1a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 7370849270819624493}
+  enemySpawner: {fileID: 795325130}
+--- !u!4 &1389524758
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389524755}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -11.196785, y: -3.9190664, z: 7.2179794}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1755008784
 GameObject:
   m_ObjectHideFlags: 0
@@ -991,6 +1050,10 @@ PrefabInstance:
       propertyPath: rigidbody
       value: 
       objectReference: {fileID: 1001811696}
+    - target: {fileID: 175578025992099578, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+      propertyPath: weponId
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2576207141857271985, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
       propertyPath: m_Name
       value: Pleyr
@@ -1048,6 +1111,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+--- !u!114 &7370849270819624493 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 175578025992099578, guid: db7e098cd17aa3c49aec71846ebf250a, type: 3}
+  m_PrefabInstance: {fileID: 7370849270819624492}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67b65a0aa30fa81439e7eee65ee3a96c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1059,3 +1133,4 @@ SceneRoots:
   - {fileID: 2062874212}
   - {fileID: 795325131}
   - {fileID: 1227780759}
+  - {fileID: 1389524758}

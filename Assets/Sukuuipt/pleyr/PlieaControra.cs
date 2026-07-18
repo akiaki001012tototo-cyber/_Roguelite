@@ -1,7 +1,6 @@
 using Core.Interface;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.CompilerServices;
-using InGame.Data; // 武器データを使うために追加
 using InGame.Enums;
 using System;
 using System.Threading;
@@ -9,6 +8,10 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
+using Core.MasterData;
+
+
+
 
 
 namespace TPSRoguelite.InGame.Player
@@ -37,6 +40,10 @@ namespace TPSRoguelite.InGame.Player
         // レーザーポインターの描画距離
         private const float LASER_MAX_DISTANCE = 50.0f;
 
+        //武器のID
+        [SerializeField] private ulong weponId = 1;
+
+
 
         // 攻撃距離（射撃範囲）
         private const float ATTACK_RANGE = 50f;
@@ -57,11 +64,8 @@ namespace TPSRoguelite.InGame.Player
         [SerializeField] private LineRenderer laserLineRenderer;
 
 
-
-
         // 武器のデータ 
-        [SerializeField] private WeaponData currentWeapon;
-
+        private WeaponDataRecord currentWeapon;
 
         // 射撃可能か
         private bool canShoot = true;
@@ -73,6 +77,15 @@ namespace TPSRoguelite.InGame.Player
 
         private void Awake()
         {
+
+            gameObject.SetActive(false);
+
+
+        }
+
+        public void Setup()
+        {
+            currentWeapon=MasterDataAccessor.Instance.GetById<WeaponDataRecord>(weponId);
 
             // ゲーム開始時に、マガジンに弾をフル装填する
             if (currentWeapon != null)
@@ -95,6 +108,9 @@ namespace TPSRoguelite.InGame.Player
 
 
             }
+
+            gameObject.SetActive(true);
+
         }
 
 
@@ -111,9 +127,9 @@ namespace TPSRoguelite.InGame.Player
                 firCts = new CancellationTokenSource();
                 var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(firCts.Token, this.GetCancellationTokenOnDestroy());
 
-                switch (currentWeapon.WeaponFireType)
+                switch ((FireType)currentWeapon.WeaponFireType)
                 {
-                   
+
 
                     case FireType.SemiAuto:
                         ShootSemiAutoAsync(this.GetCancellationTokenOnDestroy()).Forget();
@@ -165,10 +181,10 @@ namespace TPSRoguelite.InGame.Player
         }
 
 
-    //バーストの射撃処理
+        //バーストの射撃処理
         private async UniTaskVoid SootBurstAsync(CancellationToken token)
-        { 
-        canShoot= false;
+        {
+            canShoot= false;
 
             for (int i = 0; i<3; i++)
             {
@@ -201,12 +217,12 @@ namespace TPSRoguelite.InGame.Player
                 Debug.Log($"フルオート！ 残弾: {CurrenAmmo}");
                 Shoot();
 
-                bool isCanceled= await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval), cancellationToken: token).SuppressCancellationThrow();
+                bool isCanceled = await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval), cancellationToken: token).SuppressCancellationThrow();
                 if (isCanceled)
                 {
                     break;
                 }
-                await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval),cancellationToken:this.GetCancellationTokenOnDestroy());
+                await UniTask.Delay(TimeSpan.FromSeconds(currentWeapon.FireInterval), cancellationToken: this.GetCancellationTokenOnDestroy());
                 canShoot=true;
 
             }
@@ -242,12 +258,12 @@ namespace TPSRoguelite.InGame.Player
 
         private void OnEnable()
         {
-            inputActions.Enable();
+            inputActions?.Enable();
         }
 
         private void OnDisable()
         {
-            inputActions.Disable();
+            inputActions?.Disable();
         }
 
 
@@ -257,10 +273,15 @@ namespace TPSRoguelite.InGame.Player
             //float x = Input.GetAxisRaw("Horizontal");
             //float z = Input.GetAxisRaw("Vertical");
 
-            ////入力自値から移動方向のベクトル
+            //入力自値から移動方向のベクトル
             //movDirection=new Vector3(x,0,z).normalized;
+                
+            if (inputActions == null||mainCameraTransform==null)
+            {
+                return;
+            }
+           
 
-            movInput=inputActions.Player.Move.ReadValue<Vector2>();
 
             DrawLaserPointer();
         }
@@ -279,6 +300,18 @@ namespace TPSRoguelite.InGame.Player
 
                 return;
             }
+            // カメラの水平方向の前方を計算 (入力の有無に関わらず常に計算する)
+            Vector3 cameraForward = mainCameraTransform.forward;
+            cameraForward.y= 0f;
+            cameraForward.Normalize();
+
+            if (cameraForward!=Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
+                rigidbody.rotation = Quaternion.Slerp(rigidbody.rotation, targetRotation, ROTATION_SPEED*Time.fixedDeltaTime);
+            }
+
+            movInput=inputActions.Player.Move.ReadValue<Vector2>();
             if (movInput==Vector2.zero)
             {
                 rigidbody.linearVelocity=new Vector3(0f, rigidbody.linearVelocity.y, 0f);
@@ -291,19 +324,13 @@ namespace TPSRoguelite.InGame.Player
             //rigidbody.linearVelocity=targetVelocity*MOVE_SPEED;
 
             // カメラ基準の計算に変更
-            Vector3 cameraForward = mainCameraTransform.forward;
             Vector3 cameraRight = mainCameraTransform.right;
 
             // 空や地面に向かって移動しないよう、Y軸を水平に補正
-            cameraForward.y = 0f;
             cameraRight.y = 0f;
-            cameraForward.Normalize();
             cameraRight.Normalize();
 
             Vector3 moveDirection = (cameraForward*movInput.y+cameraRight*movInput.x);
-
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-            rigidbody.rotation=Quaternion.Slerp(rigidbody.rotation, targetRotation, ROTATION_SPEED*Time.fixedDeltaTime);
 
             Vector3 targetVelocity = moveDirection * MOVE_SPEED;
             rigidbody.linearVelocity= new Vector3(targetVelocity.x, rigidbody.linearVelocity.y, targetVelocity.z);

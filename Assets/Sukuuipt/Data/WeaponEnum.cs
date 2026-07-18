@@ -1,3 +1,5 @@
+using Core.MasterData;
+
 namespace InGame.Enums
 {
     /// <summary>
