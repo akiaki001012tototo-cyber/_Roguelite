@@ -125,7 +125,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9e0fc6010e11ff4483c30f2c7ff0404, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <EnemyDataAsset>k__BackingField: {fileID: 11400000, guid: 6b3a8e2a51191734ebef49f68efa5250, type: 2}
+  modelRenderers:
+  - {fileID: 3748573742180484471}
 --- !u!195 &396594840266846181
 NavMeshAgent:
   m_ObjectHideFlags: 0

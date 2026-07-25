@@ -13,7 +13,6 @@ namespace TPSRoguelite.InGame.Camera
 
         [Header("カメラの基本設定")]
 
-        [SerializeField] private Transform taget;
         //カメラの感度
         [SerializeField] private float lookSensitivity = 0.2f;
 
