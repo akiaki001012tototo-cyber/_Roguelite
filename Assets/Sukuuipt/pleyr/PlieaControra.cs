@@ -53,6 +53,12 @@ namespace TPSRoguelite.InGame.Player
         //リロード中の時間がかかるサークル画像
         [SerializeField] private Image rieioadImage;
 
+        
+        [SerializeField] private Slider expBar;
+        
+        [SerializeField] private TextMeshProUGUI IevelUpText;
+        
+        [SerializeField] private ParticleSystem IevelUpEffct;
 
         // 攻撃距離（射撃範囲）
         private const float ATTACK_RANGE = 50f;
@@ -64,6 +70,12 @@ namespace TPSRoguelite.InGame.Player
 
         //現在の弾の数
         public int CurrenAmmo { get; private set; }
+
+        public int CurrenExp { get; private set; }
+
+        public int CurrentLevel { get; private set; }
+
+        private int RequirdExp => CurrentLevel*5;
 
         // 銃口の位置
         [SerializeField] private Transform weaponOrigin;
@@ -133,6 +145,17 @@ namespace TPSRoguelite.InGame.Player
  
             gameObject.SetActive(true);
 
+            CurrenExp = 0;
+
+            CurrentLevel = 1;
+            
+                     if (IevelUpText != null)
+                         {
+                // レベルアップ時のテキストを非表示にする
+                IevelUpText.enabled = false;
+                          }
+            
+            UpdateExpUI();
 
         }
 
@@ -487,9 +510,7 @@ namespace TPSRoguelite.InGame.Player
             }
         }
 
-        /// <summary>
-        /// リロード終了処理
-        /// </summary>
+        // リロード終了処理
         private void FinishReload()
         {
             if (rieioadUI != null)
@@ -500,5 +521,20 @@ namespace TPSRoguelite.InGame.Player
             CurrenAmmo = currentWeapon.MaxAmmo;
             UpdateCurrentAmmoUI();
             isReloading = false;
+        }
+
+       public void AddExp(int amount)
+        {
+            CurrenExp+=amount;
+            UpdateExpUI();
+
+        }
+
+        void UpdateExpUI()
+        {
+            if (expBar!=null)
+            {
+                expBar.value=(float)CurrenExp/RequirdExp;
+            }
         }
  }  }        

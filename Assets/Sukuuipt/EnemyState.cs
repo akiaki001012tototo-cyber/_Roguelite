@@ -13,8 +13,14 @@ namespace TPSRoguelite
     {
         //点滅時間
         private const float FLASH_DURATION = 0.1f;
+
+        private const float ORB_DROP_HEIGHT_OFFSET = 0.5f;
+
         //キャラクターのレンダラー
         [SerializeField] private Renderer[] modelRenderers;
+
+        [SerializeField] private GameObject experienceOrbPrefab;
+
 
         //キャラクターの元々の色
         private Color[] defaulfColors;
@@ -96,6 +102,12 @@ namespace TPSRoguelite
 
             void Die()
             {
+                if (experienceOrbPrefab != null)
+                {
+                    Vector3 spawnPosition = transform.position + Vector3.up * ORB_DROP_HEIGHT_OFFSET;
+                    Instantiate(experienceOrbPrefab, spawnPosition, Quaternion.identity);
+                }
+
                 Debug.Log($"{EnemyDataAsset.EnemyNeme}を倒しました");
                 // Destroy(gameObject);
 
