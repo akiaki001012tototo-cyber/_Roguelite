@@ -53,17 +53,17 @@ namespace TPSRoguelite.InGame.Player
         //リロード中の時間がかかるサークル画像
         [SerializeField] private Image rieioadImage;
 
-        
+
         [SerializeField] private Slider expBar;
-        
-        [SerializeField] private TextMeshProUGUI IevelUpText;
-        
-        [SerializeField] private ParticleSystem IevelUpEffct;
+
+        [SerializeField] private TextMeshProUGUI levelUpText;
+
+        [SerializeField] private ParticleSystem levelUpEffct;
 
         // 攻撃距離（射撃範囲）
         private const float ATTACK_RANGE = 50f;
 
-
+        private const float LEVEL_UP_EFFECT_DURATION = 2f;
 
         // (既存のメンバ変数は省略)
         private bool isReloading;
@@ -137,24 +137,24 @@ namespace TPSRoguelite.InGame.Player
 
             }
 
-           
+
             if (rieioadUI!=null)
             {
                 rieioadUI.SetActive(false);
             }
- 
+
             gameObject.SetActive(true);
 
             CurrenExp = 0;
 
             CurrentLevel = 1;
-            
-                     if (IevelUpText != null)
-                         {
+
+            if (levelUpText != null)
+            {
                 // レベルアップ時のテキストを非表示にする
-                IevelUpText.enabled = false;
-                          }
-            
+                levelUpText.enabled = false;
+            }
+
             UpdateExpUI();
 
         }
@@ -445,7 +445,7 @@ namespace TPSRoguelite.InGame.Player
             }
             DOVirtual.Float(0f, 1f, currentWeapon.ReloadTime, UpdateReloadUI).SetEase(Ease.Linear).OnComplete(FinishReload);
 
-            
+
         }
 
 
@@ -523,9 +523,15 @@ namespace TPSRoguelite.InGame.Player
             isReloading = false;
         }
 
-       public void AddExp(int amount)
+        public void AddExp(int amount)
         {
             CurrenExp+=amount;
+
+            if (CurrenExp>=RequirdExp)
+            {
+                LeveUp();
+            }
+
             UpdateExpUI();
 
         }
@@ -537,4 +543,36 @@ namespace TPSRoguelite.InGame.Player
                 expBar.value=(float)CurrenExp/RequirdExp;
             }
         }
- }  }        
+
+
+        private void LeveUp()
+        {
+            CurrentLevel++;
+
+            CurrenExp-=RequirdExp;
+
+            if (levelUpEffct!=null)
+            {
+
+                levelUpEffct.Play();
+            }
+
+            ShowLevelUpTextAsync().Forget();
+
+        }
+
+        private async UniTaskVoid ShowLevelUpTextAsync()
+        {
+            if (levelUpText==null)
+            {
+                return;
+            }
+
+            levelUpText.enabled=true;
+            levelUpText.SetText($"Level Up\n<size=50%>Lv.{CurrentLevel}</size>");
+
+            await UniTask.Delay(TimeSpan.FromSeconds(LEVEL_UP_EFFECT_DURATION), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+            levelUpText.enabled = false;
+        }
+    } }        
