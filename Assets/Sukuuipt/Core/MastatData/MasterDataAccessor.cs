@@ -12,6 +12,7 @@ namespace Core.MasterData
         // Addressablesで設定するラベル
         private const string ENEMY_LABEL = "EnemyData";
         private const string WEAPON_LABEL = "WeaponData";
+        private const string SKILL_LABEL = "SkillData";
 
         /// <summary>
         /// 外部からアクセスするためのインスタンス
@@ -46,8 +47,9 @@ namespace Core.MasterData
         {
             await UniTask.WhenAll(
                   // 第一引数はSOの型、第二引数はレコードの型を指定してロード！
-                  LoadAsync<EnemyData, EnemyDataRecord>(ENEMY_LABEL), LoadAsync<WeaponData, WeaponDataRecord>(WEAPON_LABEL));
-  
+                  LoadAsync<EnemyData, EnemyDataRecord>(ENEMY_LABEL), LoadAsync<WeaponData, WeaponDataRecord>(WEAPON_LABEL),
+                LoadAsync<SkillData, SkillDataRecord>(SKILL_LABEL));
+
             Debug.Log("全てのマスターデータの読み込みが完了しました。");
 
         }

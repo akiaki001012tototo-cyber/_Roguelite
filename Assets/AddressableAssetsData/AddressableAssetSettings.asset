@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: b30458451e610724694427272464d269
   m_currentHash:
     serializedVersion: 2
-    Hash: 0d45d89e74568c0e0165a44335da81f3
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -103,6 +103,7 @@ MonoBehaviour:
     - default
     - EnemyData
     - WeaponData
+    - SkillData
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 8d011cd6c030c854b9bd41d5f22717c9, type: 2}
