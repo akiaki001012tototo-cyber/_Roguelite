@@ -19,7 +19,7 @@ using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 namespace TPSRoguelite.InGame.Player
 {
-    public class PlieaControra : MonoBehaviour
+    public class PlieaControra : MonoBehaviour, IDamageable
     {
 
         private const float MOVE_SPEED = 5.0f;  //ˆÚ“®‘¬“x
@@ -62,6 +62,8 @@ namespace TPSRoguelite.InGame.Player
 
         [SerializeField] private ParticleSystem levelUpEffct;
 
+        [SerializeField] private Slider hpBar;
+
         // UŒ‚‹——£iŽËŒ‚”ÍˆÍj
         private const float ATTACK_RANGE = 50f;
 
@@ -76,6 +78,11 @@ namespace TPSRoguelite.InGame.Player
         public int CurrenExp { get; private set; }
 
         public int CurrentLevel { get; private set; }
+
+        public int MaxHP { get; private set; } = 100;
+
+        public int CurrentHP { get; private set; }
+
 
         private int RequirdExp => CurrentLevel*5;
 
@@ -180,6 +187,8 @@ namespace TPSRoguelite.InGame.Player
                 levelUpText.enabled = false;
             }
 
+            CurrentHP=MaxHP;
+            UpdateHpBar();
 
             UpdateExpUI();
 
@@ -622,16 +631,16 @@ namespace TPSRoguelite.InGame.Player
             switch ((SkillType)skill.SkillType)
             {
 
-                case SkillType.MoveSpeedUp:moveSpeedBuf+=skill.Value;
+                case SkillType.MoveSpeedUp: moveSpeedBuf+=skill.Value;
                     break;
 
                 case SkillType.AttackPowerUp: attackPowerBuf+=skill.Value;
                     break;
 
-                case SkillType.FireRateUp:fireRateBuff+=skill.Value;
+                case SkillType.FireRateUp: fireRateBuff+=skill.Value;
                     break;
 
-                case SkillType.ReloadSpeedUp:reloadSpeedBuff+=skill.Value;
+                case SkillType.ReloadSpeedUp: reloadSpeedBuff+=skill.Value;
                     break;
 
                 case SkillType.MaxAmmoUp: maxAmmoBuff+=(int)skill.Value;
@@ -641,5 +650,40 @@ namespace TPSRoguelite.InGame.Player
             }
         }
 
+        void UpdateHpBar()
+        {
+            if (hpBar!=null)
+            {
+                hpBar.value=(float)CurrentHP/MaxHP;
 
-        } } 
+            }
+        }
+
+        void Die()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.GameOver();
+            }
+        }
+
+        public void TakeDamage(int damegeAmount)
+        {
+            if (damegeAmount <= 0 || CurrentHP <= 0)
+            {
+                return;
+            }
+
+            CurrentHP -= damegeAmount;
+
+            UpdateHpBar();
+
+            if (CurrentHP <= 0)
+            {
+                Die();
+            }
+
+        }
+
+
+}   }   

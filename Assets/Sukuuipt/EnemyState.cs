@@ -156,6 +156,15 @@ namespace TPSRoguelite
                 ResetColor();
             }
         }
+
+        void OnCollisionEnter(Collision collision)
+        {
+            var player = collision.gameObject.GetComponent<IDamageable>();
+            if (player != null && collision.gameObject.CompareTag("Player"))
+            {
+                player.TakeDamage(10);
+            }
+        }
     }
 
 }
